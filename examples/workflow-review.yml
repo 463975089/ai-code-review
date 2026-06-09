@@ -1,0 +1,32 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: AI review
+        uses: your-org/ai-code-review-commenter@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          ai-base-url: https://api.openai.com/v1
+          model: gpt-4.1
+          prompt-file: .github/review-prompt.md
+          max-files: "20"
+          max-line-comments: "10"

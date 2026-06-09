@@ -1,0 +1,42 @@
+name: AI Code Review Commenter
+description: Review pull requests or pushes with an LLM and publish comments back to GitHub.
+author: songlinfeng
+
+inputs:
+  github-token:
+    description: GitHub token used to read PR files and publish comments.
+    required: true
+  ai-api-key:
+    description: API key for the OpenAI-compatible review provider.
+    required: true
+  ai-base-url:
+    description: Base URL for the OpenAI-compatible API.
+    required: false
+    default: https://api.openai.com/v1
+  model:
+    description: Model name used for the review request.
+    required: true
+  prompt-file:
+    description: Path to the repository prompt file, relative to the checked-out repository root.
+    required: false
+    default: .github/review-prompt.md
+  max-files:
+    description: Maximum number of changed files to include in one review request.
+    required: false
+    default: "20"
+  max-line-comments:
+    description: Maximum number of inline PR comments to publish.
+    required: false
+    default: "10"
+  extra-instructions:
+    description: Extra review instructions appended after the prompt file.
+    required: false
+    default: ""
+
+runs:
+  using: node20
+  main: index.js
+
+branding:
+  icon: message-square
+  color: blue
