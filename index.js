@@ -5,8 +5,15 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 
 function getInput(name, options = {}) {
-  const key = `INPUT_${name.replace(/ /g, "_").replace(/-/g, "_").toUpperCase()}`;
-  const value = process.env[key];
+  const candidateKeys = [
+    `INPUT_${name.toUpperCase()}`,
+    `INPUT_${name.replace(/ /g, "_").toUpperCase()}`,
+    `INPUT_${name.replace(/-/g, "_").toUpperCase()}`,
+    `INPUT_${name.replace(/ /g, "_").replace(/-/g, "_").toUpperCase()}`,
+  ];
+  const value = candidateKeys
+    .map((key) => process.env[key])
+    .find((item) => item !== undefined && item !== "");
   if ((value === undefined || value === "") && options.required) {
     throw new Error(`Missing required input: ${name}`);
   }
