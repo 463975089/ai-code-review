@@ -58,7 +58,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run AI review
-        uses: your-org/ai-code-review-commenter@v1
+        uses: 463975089/ai-code-review@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-api-key: ${{ secrets.OPENAI_API_KEY }}
