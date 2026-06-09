@@ -273,6 +273,70 @@ function truncate(text, maxLength) {
   return `${text.slice(0, maxLength)}\n... [truncated]`;
 }
 
+function stripThinkingBlocks(text) {
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+}
+
+function extractJsonObject(text) {
+  const start = text.indexOf("{");
+  if (start === -1) {
+    throw new Error(`Model response did not contain a JSON object. Response preview: ${text.slice(0, 200)}`);
+  }
+
+  let depth = 0;
+  let inString = false;
+  let isEscaped = false;
+  for (let i = start; i < text.length; i += 1) {
+    const char = text[i];
+
+    if (inString) {
+      if (isEscaped) {
+        isEscaped = false;
+      } else if (char === "\\") {
+        isEscaped = true;
+      } else if (char === "\"") {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === "\"") {
+      inString = true;
+      continue;
+    }
+
+    if (char === "{") {
+      depth += 1;
+      continue;
+    }
+
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return text.slice(start, i + 1);
+      }
+    }
+  }
+
+  throw new Error(`Model response contained an opening JSON object but no valid closing brace. Response preview: ${text.slice(0, 200)}`);
+}
+
+function parseModelJson(content) {
+  const withoutThinking = stripThinkingBlocks(content);
+  const withoutCodeFence = withoutThinking
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  try {
+    return JSON.parse(withoutCodeFence);
+  } catch (_error) {
+    const extractedJson = extractJsonObject(withoutCodeFence);
+    return JSON.parse(extractedJson);
+  }
+}
+
 async function callReviewModel(baseUrl, apiKey, model, payload) {
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
@@ -302,8 +366,7 @@ async function callReviewModel(baseUrl, apiKey, model, payload) {
     throw new Error("LLM response did not include message content");
   }
 
-  const cleaned = content.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
-  return JSON.parse(cleaned);
+  return parseModelJson(content);
 }
 
 async function getPullRequestFiles(token, repoFullName, pullNumber) {

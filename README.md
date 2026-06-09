@@ -6,6 +6,7 @@ This GitHub Action reviews code on `pull_request` or `push` events with an OpenA
 - `push`: publishes a commit-level summary comment
 - supports a repository-specific prompt file, so different repos can use different review rules
 - supports optional blocking keyword rules in the prompt file front matter
+- runs as a JavaScript action on Node.js 24
 
 ## Use Cases
 
@@ -143,6 +144,7 @@ For pushes, the action:
 - `push` reviews are less rich than `pull_request` reviews
 - blocking keyword matching is simple substring matching
 - content keyword matching only checks newly added diff lines
+- some reasoning models may still return non-JSON output formats that need provider-side tuning
 
 ## Recommended Permissions
 
